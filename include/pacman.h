@@ -1,7 +1,8 @@
 #pragma once
 #include "entity.cpp"
 
-class Pacman : public Entity{
+class Pacman : public Entity
+{
     protected:
     private:
         /// @brief Color of pacman. Yellow by default.
@@ -15,6 +16,6 @@ class Pacman : public Entity{
         Pacman() : Entity() {};
         Pacman(Vector2 pos, Vector2 dir) : Entity(pos, dir) {};
         /// @brief Renders Pacman. Should be called every frame.
-        void Render(Color background);
+        void Render(Color background, float scale, Camera2D camera);
         void SetSize(unsigned short int newSize);
 };

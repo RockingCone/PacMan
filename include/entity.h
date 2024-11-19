@@ -2,7 +2,8 @@
 #include "raylib.h"
 #include "resource_dir.h"
 
-class Entity{
+class Entity
+{
     protected:
     private:
         /// @brief Pixel Coordinates of Entity
@@ -23,5 +24,7 @@ class Entity{
         /// @return Direction
         Vector2 GetDir();
         /// @brief Moves Entity One pixel
-        void Move();
+        void Move(float scale);
+        /// @brief Sets Position
+        void SetPos(Vector2 pos);
 };
