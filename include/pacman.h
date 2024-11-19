@@ -1,12 +1,13 @@
 #pragma once
 #include "entity.cpp"
+#define PACMANYELLOW (Color){255, 255, 0, 255}
 
 class Pacman : public Entity
 {
     protected:
     private:
         /// @brief Color of pacman. Yellow by default.
-        Color color = YELLOW;
+        Color color = PACMANYELLOW;
         /// @brief Radius of pacman in pixels.
         unsigned short int size;
         /// @brief The Frame of animation Pacman is on. This determines how open his mouth is. His mouth is closed at frame=0.

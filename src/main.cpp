@@ -28,6 +28,8 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 #include "pacman.cpp"
 #include <string>
+#define DOTYELLOW (Color){200, 200, 0, 255}
+#define DOTWHITE (Color){200, 200, 200, 255}
 
 int main ()
 {
@@ -47,6 +49,7 @@ int main ()
 	bool spawn1 = 0;
 	bool spawn2 = 0;
 
+	int pelletFlash = 0;
 	bool active = 1;
 	short unsigned int level = 0;
 	Vector2 input = {0,0};
@@ -156,14 +159,17 @@ int main ()
 							DrawRectangle(i * cellSize, j * cellSize, cellSize, cellSize, BLUE);
 							break;
 						case(2):
-							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 5, YELLOW);
+							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 5, DOTYELLOW);
 							break;
 						case(3):
-							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 2, YELLOW);
+							if (pelletFlash > 0)
+								DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 2, DOTWHITE);
+							else
+								DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 2, DOTYELLOW);
 							break;
 						case(4):
-							DrawCircle(i * cellSize + (cellSize / 3), j * cellSize + (cellSize * (2/3)), cellSize / 3, RED);
-							DrawCircle(i * cellSize + (cellSize * (2/3)), j * cellSize + (cellSize * (2/3)), cellSize / 3, RED);
+							DrawCircle(i * cellSize + (cellSize / 3), j * cellSize + (cellSize * (0.5)), cellSize / 3, RED);
+							DrawCircle(i * cellSize + (cellSize * (2/3)), j * cellSize + (cellSize * (0.5)), cellSize / 3, RED);
 							DrawLine(i * cellSize + (cellSize * (2/3)), j * cellSize + (cellSize / 3), i * cellSize + (cellSize * (2/3)), j * cellSize, GREEN);
 							DrawLine(i * cellSize + (cellSize / 3), j * cellSize + (cellSize / 3), i * cellSize + (cellSize * (2/3)), j * cellSize, GREEN);
 							break;
@@ -172,6 +178,9 @@ int main ()
 					}
 				}
 			}
+			pelletFlash++;
+			if (pelletFlash > 10)
+				pelletFlash = -10;
 			EndMode2D();
 
 			// Render Entities
