@@ -15,8 +15,7 @@ class Pacman : public Entity
     public:
         ~Pacman();
         Pacman() : Entity() {};
-        Pacman(Vector2 pos, Vector2 dir) : Entity(pos, dir) {};
+        Pacman(Vector2 pos, Vector2 dir, unsigned short int newSize) : Entity(pos, dir) {size = newSize;};
         /// @brief Renders Pacman. Should be called every frame.
         void Render(Color background, float scale, Camera2D camera);
-        void SetSize(unsigned short int newSize);
 };

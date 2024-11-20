@@ -27,18 +27,27 @@ For a C++ project simply rename the file to .cpp and re-run the build script
 #include "raylib.h"
 #include "resource_dir.h"	// utility header for SearchAndSetResourceDir
 #include "pacman.cpp"
+#include "ghost.cpp"
 #include <string>
+
 #define DOTYELLOW (Color){200, 200, 0, 255}
 #define DOTWHITE (Color){200, 200, 200, 255}
 
+struct Tile
+{
+	int x;
+	int y;
+};
+
 int main ()
 {
-	//// Main Variables
+	#pragma region Main_Variables
 	// Window Variables
 	float scale = 3;
 	short unsigned int cellSize = 8 * scale;
 	int screenW = 224 * scale;
 	int screenH = 288 * scale;
+	int framerate = 120;
 
 	// Score Variables
 	unsigned int score = 0;
@@ -51,11 +60,18 @@ int main ()
 
 	int pelletFlash = 0;
 	bool active = 1;
-	short unsigned int level = 0;
-	Vector2 input = {0,0};
-	Pacman player({14.0f * cellSize, (float)int(23.5f * cellSize)}, {1,0});
-	Vector2 playerPos = {14 * scale, 13 * scale};
-	player.SetSize(cellSize / 2);
+	short unsigned int level = 1;
+	Vector2 input = {1,0};
+
+	// Player Variables
+	Pacman player({13.5f * cellSize, 23.5f * cellSize}, {1,0}, cellSize / 2);
+	Vector2 playerPos = player.GetPos();
+
+	// Ghost Variables
+	Ghost blinky({13.0f * cellSize, 11.5f * cellSize}, {-1,0}, RED, cellSize);
+	Tile blinkyPos = {blinky.GetPos().x, blinky.GetPos().y};
+	#pragma endregion Main_Variables
+
 	short unsigned int lvl0[31][28] = 
 	{
 	{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -101,7 +117,7 @@ int main ()
 
 	// Window Initialization
 	InitWindow(screenW, screenH, "Pac-Man");
-	SetTargetFPS(60);
+	SetTargetFPS(framerate);
 
 	// Camera Initialization
 	Camera2D camera = {0};
@@ -139,13 +155,12 @@ int main ()
 		#pragma region Rendering
 		BeginDrawing();
 			ClearBackground(BLACK);
-
 			// Render Score
 			DrawText("HIGH", 10 * cellSize, 0, cellSize, WHITE);
 			DrawText("SCORE", 15 * cellSize, 0, cellSize, WHITE);
 			DrawText(scoreStr.c_str(), 5 * cellSize, cellSize, cellSize, WHITE);
 			DrawText(highScoreStr.c_str(), 14 * cellSize, cellSize, cellSize, WHITE);
-			
+			DrawText(std::to_string(int(1 / GetFrameTime() + 0.1f)).c_str(), 20 * cellSize, cellSize, cellSize, WHITE);
 			BeginMode2D(camera);
 			for (int i = 0; i < 28; i++)
 			{
@@ -168,10 +183,42 @@ int main ()
 								DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 2, DOTYELLOW);
 							break;
 						case(4):
+							// Draw Cherries
 							DrawCircle(i * cellSize + (cellSize / 3), j * cellSize + (cellSize * (0.5)), cellSize / 3, RED);
 							DrawCircle(i * cellSize + (cellSize * (2/3)), j * cellSize + (cellSize * (0.5)), cellSize / 3, RED);
 							DrawLine(i * cellSize + (cellSize * (2/3)), j * cellSize + (cellSize / 3), i * cellSize + (cellSize * (2/3)), j * cellSize, GREEN);
 							DrawLine(i * cellSize + (cellSize / 3), j * cellSize + (cellSize / 3), i * cellSize + (cellSize * (2/3)), j * cellSize, GREEN);
+							break;
+						case(5):
+							// Draw Strawberry
+							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 3), cellSize / 3, RED);
+							DrawTriangle((Vector2){i * cellSize + (5 * cellSize / 6), j * cellSize + (cellSize / 3)},
+										 (Vector2){i * cellSize + (cellSize / 6), j * cellSize + (cellSize / 3)},
+										 (Vector2){i * cellSize + (cellSize / 2), j * cellSize + cellSize}, RED);
+							break;
+						case(6):
+							// Draw Orange
+							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize * 0.75f, ORANGE);
+							break;
+						case(7):
+							// Draw Apple
+							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize * 0.75f, RED);
+							break;
+						case(8):
+							// Draw Pineapple
+							DrawEllipse(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize * 0.9f, cellSize * 0.45f, YELLOW);
+							break;
+						case(9):
+							// Draw Spaceship
+							DrawEllipse(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize * 0.9f, cellSize * 0.45f, GRAY);
+							break;
+						case(10):
+							// Draw Bell
+							DrawCircle(i * cellSize + (cellSize / 2), j * cellSize + (cellSize / 2), cellSize / 2, GOLD);
+							DrawRectangle(i * cellSize, i * cellSize + (cellSize / 2), cellSize, cellSize / 2, GOLD);
+							break;
+						case(11):
+							// Draw Key
 							break;
 						default:
 							std::cout << "Err : Invalid Map Symbol";
@@ -185,12 +232,13 @@ int main ()
 
 			// Render Entities
 			player.Render(BLACK, scale, camera);
-
+			blinky.Render(scale, camera);
 		EndDrawing();
+			
 		#pragma endregion Rendering
 
 		// Player Position
-		playerPos = {player.GetPos().x, player.GetPos().y};
+		playerPos = player.GetPos();
 		int playerX = playerPos.x / cellSize;
 		int playerY = playerPos.y / cellSize;
 
@@ -235,7 +283,7 @@ int main ()
 		scoreStr = std::to_string(score);
 
 		// Spawn Fruits When Needed
-		if (clearedDots == 70 && spawn1 == 0 && level == 0)
+		if (clearedDots == 70 && spawn1 == 0)
 		{
 			switch(level)
 			{
@@ -273,7 +321,7 @@ int main ()
 			}
 			spawn1 = 1;
 		}
-		else if (clearedDots == 170 && spawn2 == 0 && level == 0)
+		else if (clearedDots == 170 && spawn2 == 0)
 		{
 			switch(level)
 			{
@@ -368,5 +416,14 @@ int main ()
 		}
 		player.Move(scale);
 		#pragma endregion Player_Movement
+
+		#pragma region Ghost_Movement
+		// Shadow "Blinky"
+		blinkyPos = {(int)blinky.GetPos().x / cellSize, (int)blinky.GetPos().y / cellSize};
+		blinky.Move(scale);
+		// Speedy "Plinky"
+		// Bashful "Inky"
+		// Pokey "Clyde"
+		#pragma endregion Ghost_Movement
 	}
 }

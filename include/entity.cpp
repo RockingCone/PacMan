@@ -38,8 +38,8 @@ void Entity::Move(float scale)
         direction.x = direction.x / direction.x;
         direction.y = direction.y / direction.y;
     }
-    position.x += direction.x * scale * 1.5f;
-    position.y += direction.y * scale * 1.5f;
+    position.x += direction.x * scale;
+    position.y += direction.y * scale;
 }
 
 void Entity::SetPos(Vector2 pos)

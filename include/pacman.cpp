@@ -5,8 +5,6 @@ Pacman::~Pacman(){};
 
 void Pacman::Render(Color background, float scale, Camera2D camera)
 {
-    
-    BeginDrawing();
     BeginMode2D(camera);
     Vector2 pos = GetPos();
     int xDir = GetDir().x;
@@ -32,12 +30,6 @@ void Pacman::Render(Color background, float scale, Camera2D camera)
                     break;
             }
     }
-    frame += scale * 1.5f;
+    frame += scale;
     EndMode2D();
-    EndDrawing();
-}
-
-void Pacman::SetSize(unsigned short int newSize)
-{
-    size = newSize;
 }
